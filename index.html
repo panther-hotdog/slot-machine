@@ -254,30 +254,69 @@
     }
 
     @media (max-width: 760px) {
-      .slot {
-        width: clamp(140px, 30vw, 210px);
-        height: 126px;
-      }
-
-      .between-text {
-        min-width: 74px;
-        font-size: 0.82rem;
-      }
-
-      .controls {
-        gap: 6px;
-      }
-
-      .slot-step-spacer {
-        min-width: 74px;
+      body {
+        padding: 8px;
       }
 
       .machine {
-        padding-right: 12px;
+        width: 100%;
+        padding: 10px 10px 14px;
+        border-radius: 18px;
+      }
+
+      .reels-panel {
+        padding: 10px;
+      }
+
+      .reel-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .slot {
+        width: 100%;
+        height: 112px;
+      }
+
+      .between-text {
+        min-width: 0;
+        width: 100%;
+        font-size: 0.95rem;
+      }
+
+      .controls {
+        margin-top: 10px;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+      }
+
+      .spin-btn {
+        width: 74px;
+        height: 74px;
+      }
+
+      .slot-step-spacer {
+        display: none;
       }
 
       .lever {
         display: none;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .slot {
+        height: 104px;
+      }
+
+      .slot-text {
+        font-size: 0.98rem;
+      }
+
+      .spin-btn {
+        width: 68px;
+        height: 68px;
       }
     }
 
