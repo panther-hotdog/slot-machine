@@ -301,7 +301,26 @@
       }
 
       .lever {
-        display: none;
+        display: block;
+        top: 84px;
+        right: 8px;
+        width: 12px;
+        height: 150px;
+      }
+
+      .lever::before {
+        width: 32px;
+        height: 32px;
+        top: -18px;
+      }
+
+      .lever::after {
+        width: 22px;
+        height: 14px;
+      }
+
+      .lever.pulled::before {
+        transform: translateX(-50%) translateY(126px);
       }
     }
 
