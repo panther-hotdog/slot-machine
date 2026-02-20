@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Slot Machine</title>
+  <style>
+    :root {
+      --gold-body-1: #f7d783;
+      --gold-body-2: #cd9d3d;
+      --gold-body-3: #8f5d16;
+      --gold-1: #ffe7ad;
+      --gold-2: #d7a23d;
+      --gold-3: #6f430b;
+      --metal-1: #f5f8ff;
+      --metal-2: #cfd8ea;
+      --metal-3: #8895b0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      background: radial-gradient(circle at 35% 15%, #3a2f1a 0%, #21150d 50%, #120b08 100%);
+      color: #fff;
+      padding: 14px;
+    }
+
+    .machine {
+      width: min(99vw, 1160px);
+      border-radius: 26px;
+      padding: 14px 74px 22px 12px;
+      position: relative;
+      background:
+        linear-gradient(180deg, var(--gold-body-1) 0%, var(--gold-body-2) 42%, var(--gold-body-3) 100%);
+      border: 4px solid #6b4410;
+      box-shadow:
+        inset 0 3px 0 rgba(255, 245, 206, 0.48),
+        inset 0 -18px 22px rgba(0, 0, 0, 0.32),
+        0 22px 38px rgba(0, 0, 0, 0.5);
+    }
+
+    .header {
+      border-radius: 16px;
+      padding: 10px 10px 12px;
+      border: 3px solid;
+      border-color: var(--gold-1) var(--gold-3) var(--gold-3) var(--gold-1);
+      background: linear-gradient(180deg, #3e2a10 0%, #211307 100%);
+      box-shadow: inset 0 2px 0 rgba(255, 231, 173, 0.45);
+    }
+
+    .lights {
+      height: 16px;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 10px 8px, #fff4b0 0 3px, transparent 4px),
+        radial-gradient(circle at 34px 8px, #ffc6a6 0 3px, transparent 4px),
+        radial-gradient(circle at 58px 8px, #d5ffb2 0 3px, transparent 4px),
+        radial-gradient(circle at 82px 8px, #a8e8ff 0 3px, transparent 4px);
+      background-size: 96px 16px;
+      opacity: 0.9;
+      animation: lights 0.7s linear infinite;
+    }
+
+    .jackpot-title {
+      margin-top: 10px;
+      text-align: center;
+      font-size: clamp(1.2rem, 2.7vw, 2rem);
+      font-weight: 900;
+      color: #ffe7ad;
+      letter-spacing: 0.08em;
+      text-shadow: 0 1px 0 #5e3b0d;
+      user-select: none;
+    }
+
+    .reels-panel {
+      margin-top: 12px;
+      border-radius: 14px;
+      padding: 12px;
+      border: 3px solid;
+      border-color: var(--gold-1) var(--gold-3) var(--gold-3) var(--gold-1);
+      background: linear-gradient(180deg, #2d3542 0%, #1f252f 100%);
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.45);
+    }
+
+    .reel-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+    }
+
+    .slot {
+      position: relative;
+      width: clamp(250px, 30vw, 420px);
+      height: 152px;
+      border-radius: 12px;
+      border: 4px solid #2a3144;
+      background:
+        linear-gradient(180deg, var(--metal-1) 0%, var(--metal-2) 52%, var(--metal-1) 100%);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      box-shadow:
+        inset 0 3px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -3px 8px rgba(0, 0, 0, 0.12),
+        0 9px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .slot::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.46) 0 24%, transparent 36% 62%, rgba(0, 0, 0, 0.08) 100%);
+      pointer-events: none;
+    }
+
+    .slot.reel-spinning::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          180deg,
+          rgba(56, 71, 102, 0.12) 0 4px,
+          rgba(56, 71, 102, 0.03) 4px 8px
+        );
+      animation: scan 0.14s linear infinite;
+      pointer-events: none;
+    }
+
+    .slot-text {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      padding: 0 12px;
+      text-align: center;
+      line-height: 1.1;
+      white-space: normal;
+      word-break: keep-all;
+      font-size: clamp(0.95rem, 1.55vw, 1.45rem);
+      font-weight: 900;
+      color: #18243e;
+      text-shadow: 0 1px 0 #fff;
+    }
+
+    .slot.reel-spinning .slot-text {
+      filter: blur(0.55px);
+      color: #243354;
+    }
+
+    .between-text {
+      font-size: clamp(0.95rem, 1.7vw, 1.2rem);
+      font-weight: 900;
+      color: #ffe4a8;
+      letter-spacing: 0.04em;
+      text-shadow: 0 1px 0 #5a2f00;
+      min-width: 110px;
+      user-select: none;
+      text-align: center;
+    }
+
+    .controls {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 10px;
+      align-items: center;
+      justify-items: center;
+    }
+
+    .slot-step-spacer {
+      min-width: 110px;
+    }
+
+    .spin-btn {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      border: 0;
+      cursor: pointer;
+      background: radial-gradient(circle at 30% 28%, #ff9a9a 0 28%, #e43d3d 50%, #a91515 100%);
+      box-shadow:
+        0 11px 0 #721010,
+        0 16px 24px rgba(0, 0, 0, 0.3),
+        inset -7px -10px 12px rgba(0, 0, 0, 0.2),
+        inset 8px 10px 14px rgba(255, 255, 255, 0.34);
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .spin-btn:active {
+      transform: translateY(4px);
+      box-shadow:
+        0 5px 0 #721010,
+        0 8px 13px rgba(0, 0, 0, 0.28),
+        inset -7px -10px 12px rgba(0, 0, 0, 0.2),
+        inset 8px 10px 14px rgba(255, 255, 255, 0.34);
+    }
+
+    .spin-btn.is-active {
+      outline: 4px solid rgba(255, 220, 140, 0.58);
+      outline-offset: 2px;
+    }
+
+    .lever {
+      position: absolute;
+      top: 102px;
+      right: 18px;
+      width: 16px;
+      height: 210px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #fbe8b6 0%, #c38b2b 48%, #7f4f10 100%);
+      box-shadow: inset -2px 0 3px rgba(0, 0, 0, 0.18), 0 0 0 2px rgba(100, 60, 11, 0.5);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .lever::before {
+      content: "";
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(0);
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #fff2c6 0 28%, #e6b35a 56%, #a3691f 100%);
+      box-shadow: inset -3px -5px 8px rgba(0, 0, 0, 0.18), 0 6px 12px rgba(0, 0, 0, 0.35);
+      transition: transform 0.14s ease;
+    }
+
+    .lever::after {
+      content: "";
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 28px;
+      height: 18px;
+      border-radius: 9px;
+      background: linear-gradient(180deg, #ebc67f 0%, #935c16 100%);
+    }
+
+    .lever.pulled::before {
+      transform: translateX(-50%) translateY(178px);
+    }
+
+    @media (max-width: 760px) {
+      .slot {
+        width: clamp(140px, 30vw, 210px);
+        height: 126px;
+      }
+
+      .between-text {
+        min-width: 74px;
+        font-size: 0.82rem;
+      }
+
+      .controls {
+        gap: 6px;
+      }
+
+      .slot-step-spacer {
+        min-width: 74px;
+      }
+
+      .machine {
+        padding-right: 12px;
+      }
+
+      .lever {
+        display: none;
+      }
+    }
+
+    @keyframes lights {
+      to { background-position: 96px 0; }
+    }
+
+    @keyframes scan {
+      to { transform: translateY(8px); }
+    }
+  </style>
+</head>
+<body>
+  <main class="machine">
+    <div id="lever" class="lever" role="button" tabindex="0" aria-label="リセットレバー"></div>
+    <section class="header">
+      <div class="lights"></div>
+      <div class="jackpot-title">JACKPOT</div>
+    </section>
+
+    <section class="reels-panel">
+      <div class="reel-row">
+        <div id="slotA" class="slot"><div id="labelA" class="slot-text">---</div></div>
+        <div class="between-text">何が好き？</div>
+        <div id="slotB" class="slot"><div id="labelB" class="slot-text">---</div></div>
+        <div class="between-text">よりも</div>
+        <div id="slotC" class="slot"><div id="labelC" class="slot-text">---</div></div>
+      </div>
+      <div class="controls">
+        <button id="spinBtnA" class="spin-btn" type="button" aria-label="Aスロット" title="A"></button>
+        <div class="slot-step-spacer" aria-hidden="true"></div>
+        <button id="spinBtn" class="spin-btn" type="button" aria-label="Bスロット" title="B"></button>
+        <div class="slot-step-spacer" aria-hidden="true"></div>
+        <button id="spinBtnC" class="spin-btn" type="button" aria-label="Cスロット" title="C"></button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const namesA = ["ルビィちゃん", "歩夢ちゃん", "四季ちゃん"];
+    const flavors = ["チョコミント", "ストロベリーフレーバー", "クッキー＆クリーム"];
+    const rightItems = ["チョコミント", "ストロベリーフレーバー", "クッキー＆クリーム", "あなた"];
+    const weightsA = [1, 1, 1];
+    const weightsRight = [5, 5, 5, 1];
+    const flavorByName = {
+      "ルビィちゃん": "チョコミント",
+      "歩夢ちゃん": "ストロベリーフレーバー",
+      "四季ちゃん": "クッキー＆クリーム"
+    };
+
+    const state = {
+      step: 0,
+      A: null,
+      B: null,
+      C: null,
+      plannedB: null,
+      plannedC: null,
+      running: false,
+      rafId: null,
+      lastTick: 0,
+      spinIndexA: 0,
+      spinIndexB: 0,
+      spinIndexC: 0
+    };
+
+    const labelA = document.getElementById("labelA");
+    const labelB = document.getElementById("labelB");
+    const labelC = document.getElementById("labelC");
+    const slotA = document.getElementById("slotA");
+    const slotB = document.getElementById("slotB");
+    const slotC = document.getElementById("slotC");
+    const spinBtnA = document.getElementById("spinBtnA");
+    const spinBtn = document.getElementById("spinBtn");
+    const spinBtnC = document.getElementById("spinBtnC");
+    const lever = document.getElementById("lever");
+
+    function formatDisplay(value) {
+      if (value === "ストロベリーフレーバー") return "ストロベリー<br>フレーバー";
+      if (value === "クッキー＆クリーム") return "クッキー<br>＆<br>クリーム";
+      return value;
+    }
+
+    function setLabel(labelEl, value) {
+      labelEl.innerHTML = formatDisplay(value);
+    }
+
+    function weightedChoice(poolItems, poolWeights) {
+      const total = poolWeights.reduce((sum, w) => sum + w, 0);
+      let r = Math.random() * total;
+      for (let i = 0; i < poolItems.length; i += 1) {
+        r -= poolWeights[i];
+        if (r < 0) return poolItems[i];
+      }
+      return poolItems[poolItems.length - 1];
+    }
+
+    function updateStepButtons() {
+      spinBtnA.classList.toggle("is-active", state.step === 0);
+      spinBtn.classList.toggle("is-active", state.step === 1);
+      spinBtnC.classList.toggle("is-active", state.step === 2);
+    }
+
+    function resetSlots() {
+      if (state.rafId !== null) {
+        cancelAnimationFrame(state.rafId);
+        state.rafId = null;
+      }
+      state.step = 0;
+      state.A = null;
+      state.B = null;
+      state.C = null;
+      state.plannedB = null;
+      state.plannedC = null;
+      state.running = false;
+      state.lastTick = 0;
+      setLabel(labelA, "---");
+      setLabel(labelB, "---");
+      setLabel(labelC, "---");
+      slotA.classList.remove("reel-spinning");
+      slotB.classList.remove("reel-spinning");
+      slotC.classList.remove("reel-spinning");
+      updateStepButtons();
+    }
+
+    function startSpin() {
+      state.running = true;
+      state.lastTick = 0;
+
+      if (state.step === 0) {
+        slotA.classList.add("reel-spinning");
+      } else if (state.step === 1) {
+        slotB.classList.add("reel-spinning");
+      } else if (state.step === 2) {
+        slotC.classList.add("reel-spinning");
+      }
+
+      function animate(ts) {
+        if (!state.running) return;
+
+        if (!state.lastTick || ts - state.lastTick >= 70) {
+          if (state.step === 0) {
+            state.spinIndexA = (state.spinIndexA + 1) % namesA.length;
+            setLabel(labelA, namesA[state.spinIndexA]);
+          } else if (state.step === 1) {
+            state.spinIndexB = (state.spinIndexB + 1) % rightItems.length;
+            setLabel(labelB, rightItems[state.spinIndexB]);
+          } else if (state.step === 2) {
+            state.spinIndexC = (state.spinIndexC + 1) % rightItems.length;
+            setLabel(labelC, rightItems[state.spinIndexC]);
+          }
+          state.lastTick = ts;
+        }
+
+        state.rafId = requestAnimationFrame(animate);
+      }
+
+      state.rafId = requestAnimationFrame(animate);
+    }
+
+    function stopSpinAndConfirm() {
+      if (state.rafId !== null) {
+        cancelAnimationFrame(state.rafId);
+        state.rafId = null;
+      }
+      state.running = false;
+
+      if (state.step === 0) {
+        slotA.classList.remove("reel-spinning");
+        state.A = weightedChoice(namesA, weightsA);
+        setLabel(labelA, state.A);
+
+        const targetFlavor = flavorByName[state.A];
+        const pairs = [];
+        const pairWeights = [];
+
+        pairs.push({ b: "あなた", c: targetFlavor });
+        pairWeights.push(weightsRight[3]);
+
+        pairs.push({ b: targetFlavor, c: "あなた" });
+        pairWeights.push(weightsRight[3]);
+
+        for (let i = 0; i < flavors.length; i += 1) {
+          const flavor = flavors[i];
+          if (flavor !== targetFlavor) {
+            pairs.push({ b: flavor, c: targetFlavor });
+            pairWeights.push(weightsRight[i]);
+          }
+        }
+
+        const selectedPair = weightedChoice(pairs, pairWeights);
+        state.plannedB = selectedPair.b;
+        state.plannedC = selectedPair.c;
+
+        state.step = 1;
+        updateStepButtons();
+      } else if (state.step === 1) {
+        slotB.classList.remove("reel-spinning");
+        state.B = state.plannedB;
+        setLabel(labelB, state.B);
+        state.step = 2;
+        updateStepButtons();
+      } else if (state.step === 2) {
+        slotC.classList.remove("reel-spinning");
+        state.C = state.plannedC;
+        setLabel(labelC, state.C);
+        state.step = 3;
+        updateStepButtons();
+      }
+    }
+
+    function spin() {
+      if (state.step === 3 && !state.running) return;
+
+      if (!state.running) {
+        startSpin();
+      } else {
+        stopSpinAndConfirm();
+      }
+    }
+
+    function pullLeverReset() {
+      if (state.running) return;
+      lever.classList.add("pulled");
+      setTimeout(() => {
+        resetSlots();
+      }, 110);
+      setTimeout(() => {
+        lever.classList.remove("pulled");
+      }, 180);
+    }
+
+    function pressSlotButton(targetStep) {
+      if (state.step === targetStep) spin();
+    }
+
+    spinBtnA.addEventListener("click", () => pressSlotButton(0));
+    spinBtn.addEventListener("click", () => pressSlotButton(1));
+    spinBtnC.addEventListener("click", () => pressSlotButton(2));
+    lever.addEventListener("click", pullLeverReset);
+    lever.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        pullLeverReset();
+      }
+    });
+    updateStepButtons();
+  </script>
+</body>
+</html>
